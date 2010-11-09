@@ -184,9 +184,9 @@ suite.addBatch({
       }
     },
 
-    'after rem': {
+    'after remove': {
       topic: function(test) {
-        test.rem(0, 4, this.callback);
+        test.remove(0, 4, this.callback);
       },
 
       'successfully removes 1': function(err, count) {
