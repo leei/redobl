@@ -1,0 +1,27 @@
+{
+  name: "redobl",
+  version: "0.0.1",
+  homepage: "http://github.com/leei/redobl",
+  author: "Lee Iverson <leei@sociologi.ca>",
+  repository: {
+    type: "git",
+    url: "http://github.com/leei/redobl.git"
+  },
+  bugs: {
+    web: "http://github.com/leei/redobl/issues"
+  },
+  directories: {
+    lib: "lib",
+    test: "test"
+  },
+  engines: {
+    node: ">= 0.2.3"
+  },
+  licenses: {
+    type: "MIT",
+    url: "http://github.com/leei/redobl/LICENSE"
+  },
+  dependencies: {
+    "redis-node": ">= 0.2.4"
+  }
+}
