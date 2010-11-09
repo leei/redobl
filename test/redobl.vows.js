@@ -2,21 +2,21 @@ var vows = require('vows'), assert = require('assert'), sys = require('sys');
 var redis = require('redis-node');
 
 require('underscore');
-var Redob = require('../lib/redob').Redob;
+var Redobl = require('../lib/redobl').Redobl;
 
-var client = Redob.defaults.client = redis.createClient();
+var client = Redobl.defaults.client = redis.createClient();
 client.select(6);
 //sys.log("Default redis = " + sys.inspect(client));
 client.flushdb();
 
-var Test = Redob.define('Test', {schema: {a: 'int'}}, {
+var Test = Redobl.define('Test', {schema: {a: 'int'}}, {
   init: function() { this.initialized = true; }
 });
 
-var suite = vows.describe('redob');
+var suite = vows.describe('redobl');
 
 suite.addBatch({
-  'a redob object': {
+  'a redobl object': {
     topic: function() {
       return new Test({a: 10});
     },
