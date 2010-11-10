@@ -4,6 +4,8 @@ var redis = require('redis-node');
 require('underscore');
 var Redobl = require('../lib/redobl').Redobl;
 
+//Redobl.logging = true;
+
 var client = Redobl.defaults.client = redis.createClient();
 client.select(6);
 //sys.log("Default redis = " + sys.inspect(client));
@@ -16,7 +18,7 @@ var Test = Redobl.define('Test', {schema: {a: 'int'}}, {
 var suite = vows.describe('redobl');
 
 suite.addBatch({
-  'a redobl object': {
+  'an unsaved redobl object': {
     topic: function() {
       return new Test({a: 10});
     },
@@ -45,36 +47,97 @@ suite.addBatch({
       assert.equal(t.a, 10);
     },
 
-    'can save itself': {
+    'existence test': {
       topic: function(test) {
-        test.save(this.callback);
+        test.exists(this.callback);
       },
 
-      'returns successfully': function(err, status) {
+      'fails': function(err, status) {
         assert.isNull(err);
-        assert.isTrue(status);
+        assert.equal(status, 0);
+      }
+    }
+  }
+});
+
+suite.addBatch({
+  'a saved redobl object': {
+    topic: function() {
+      Test.create({a: 10}, this.callback);
+    },
+
+    'returns successfully': function(err, test) {
+      assert.isNull(err);
+    },
+
+    'has an integer ID': function(err, test) {
+      assert.isNumber(test.id);
+    },
+
+    'has a redis key': function(err, test) {
+      assert.isString(test.redis_key);
+    },
+
+    'has the a attribute': function(err, test) {
+      assert.deepEqual(test.attrs, {a: 10});
+    },
+
+    'existence test': {
+      topic: function(test) {
+        test.exists(this.callback);
       },
 
-      'has an integer ID': function(err, status) {
-        var test = this.context.topics[1];
-        assert.isNumber(test.id);
+      'succeeds': function(err, status) {
+        assert.isNull(err);
+        assert.equal(status, 1);
+      }
+    },
+
+    'expiration': {
+      topic: function(test) {
+        test.expire(20, this.callback);
       },
 
-      'has the a attribute': function(err, status) {
-        var test = this.context.topics[1];
-        assert.deepEqual(test.attrs, {a: 10});
+      'succeeds': function(err, status) {
+        assert.isNull(err);
+        assert.equal(status, 1);
       },
 
-      'and then find based on id': {
+      'followed by ttl': {
         topic: function(_, test) {
-          Test.find(test.id, this.callback);
+          test.ttl(this.callback);
         },
 
-        'should be the same object': function(err, read) {
-          var test = this.context.topics[0];
-          assert.isNull(err);
-          assert.deepEqual(test.attrs, read.attrs);
+        'succeeds': function(err, seconds) {
+          assert.isTrue(seconds >= 0);
+          assert.isTrue(seconds <= 20);
         }
+      }
+    },
+
+    'is visible to find': {
+      topic: function(test) {
+        Test.find(test.id, this.callback);
+      },
+
+      'should be the same object': function(err, read) {
+        var test = this.context.topics[1];
+        assert.isNull(err);
+        assert.deepEqual(test.attrs, read.attrs);
+      }
+    },
+
+    'is visible to multiple find': {
+      topic: function(test) {
+        Test.find([test.id, 0], this.callback);
+      },
+
+      'should return test and null': function(err, objs) {
+        var test = this.context.topics[1];
+        assert.isNull(err);
+        assert.isNull(objs[0]);
+        assert.equal(objs[test.id].id, test.id);
+        assert.deepEqual(objs[test.id].attrs, test.attrs);
       }
     }
   }
