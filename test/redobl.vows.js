@@ -1,4 +1,5 @@
-var vows = require('vows'), assert = require('assert'), sys = require('sys');
+var vows = require('vows'), assert = require('assert');
+var sys = require('sys');
 var redis = require('redis-node');
 
 require('underscore');
@@ -52,15 +53,13 @@ suite.addBatch({
         test.exists(this.callback);
       },
 
-      'fails': function(err, status) {
+      'fails': function(err, status, ctx) {
         assert.isNull(err);
         assert.equal(status, 0);
       }
     }
-  }
-});
+  },
 
-suite.addBatch({
   'a saved redobl object': {
     topic: function() {
       Test.create({a: 10}, this.callback);
