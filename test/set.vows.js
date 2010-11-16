@@ -42,6 +42,20 @@ suite.addBatch({
         'is initially empty': function(err, length) {
           assert.equal(length, 0);
         }
+      }
+    }
+  }
+});
+
+suite.addBatch({
+  'a Redobl.Set type': {
+    topic: function() {
+      return Redobl.Set.define('Test');
+    },
+
+    'a new list object': {
+      topic: function(Test) {
+        return new Test();
       },
 
       'after an add': {
@@ -79,42 +93,50 @@ suite.addBatch({
 });
 
 suite.addBatch({
-  'a Redobl list of length 10': {
+  'a Redobl list': {
     topic: function() {
-      var test = new(Redobl.Set.define('Test'));
-      _.each(_.range(10), function(n) { test.add(n); });
-      return test;
+      return new(Redobl.Set.define('Test'));
     },
 
-    'has length': {
+    'of length 10': {
       topic: function(test) {
-        test.length(this.callback);
+        var that = this;
+        test.transaction(function () {
+          _.each(_.range(9), function(n) { test.add(n); });
+          test.add(9, that.callback);
+        });
       },
 
-      '10': function(err, len) {
-        assert.isNull(err);
-        assert.equal(len, 10);
-      },
-    },
-
-    'after remove': {
-      topic: function(test) {
-        test.remove(4, this.callback);
-      },
-
-      'successfully removes 1': function(err, count) {
-        assert.isNull(err);
-        assert.equal(count, 1);
-      },
-
-      'contents': {
+      'has length': {
         topic: function(_, test) {
-          test.members(this.callback);
+          test.length(this.callback);
         },
 
-        'doesn\'t include 4': function(err, set) {
+        '10': function(err, len) {
           assert.isNull(err);
-          assert.equal(_.indexOf(set, 4), -1);
+          assert.equal(len, 10);
+        },
+      },
+
+      'after remove': {
+        topic: function(_, test) {
+          test.remove(4, this.callback);
+        },
+
+        'successfully removes 1': function(err, count) {
+          assert.isNull(err);
+          assert.equal(count, 1);
+        },
+
+        'contents': {
+          topic: function(_, _, test) {
+            test.members(this.callback);
+          },
+
+          'doesn\'t include 4': function(err, set) {
+            assert.isNull(err);
+            assert.equal(_.indexOf(set, 4), -1);
+          }
         }
       }
     }
