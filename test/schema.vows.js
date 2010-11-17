@@ -13,6 +13,38 @@ client.flushdb();
 
 var suite = vows.describe('redobl schemas');
 
+function testAssociation(type_name, other_opts, specifics) {
+  return {
+    topic: function() {
+      return Redobl.define('Test', {
+        schema: { ints: _.extend({type: type_name}, other_opts) }
+      });
+    },
+
+    'creates the association': function(Test) {
+      assert.typeOf(Test.associations.ints, 'object');
+    },
+
+    'when instantiated': _.extend({
+      topic: function(Test) {
+        Test.create({}, this.callback);
+      },
+
+      'has an association named ints': function(err, test) {
+        assert.isNotNull(test.ints);
+      },
+
+      'instantiates the ints association': function(err, test) {
+        assert.isString(test.ints.redis_key);
+      }
+    }, specifics)
+  }
+};
+
+function disable(x) { return {}; }
+
+var Foo = Redobl.define('Foo');
+
 suite.addBatch({
   'an object with an attribute': {
     topic: function() {
@@ -29,92 +61,91 @@ suite.addBatch({
 
     'when instantiated': {
       topic: function(Test) {
-	return new Test();
+        return new Test();
       },
 
       'assigns the default value': function(_, test) {
-	assert.equal(test.foo, 1);
+        assert.equal(test.foo, 1);
       }
     }
   },
 
-  'an object with a list association': {
-    topic: function() {
-      return Redobl.define('Test', {
-        schema: {
-          ints: 'list',
-        }
-      });
-    },
-
-    'creates the association': function(Test) {
-      assert.typeOf(Test.associations.ints, 'object');
-    },
-
-    'when instantiated': {
-      topic: function(Test) {
-        Test.create({}, this.callback);
+  'an object with a list association': testAssociation('list', {}, {
+    'treats ints as a list': {
+      topic: function(test, Test) {
+        test.ints.lpush(1, this.callback);
       },
 
-      'has an association named ints': function(err, test) {
-        assert.isNotNull(test.ints);
+      'returns success': function(err, status) {
+        assert.isNull(err);
+        assert.equal(status, 1);
+      }
+    }
+  }),
+
+  'an object with a list of Foo association': testAssociation('list', {of: Foo}, {
+    'given a Foo object': {
+      topic: function(test, Test) {
+        var that = this;
+        Foo.create({}, function (err, status) {
+          that.callback(err, this);
+        })
       },
 
-      'instantiates the ints association': function(err, test) {
-        assert.isString(test.ints.redis_key);
+      'returns a Foo': function(err, foo) {
+        assert.instanceOf(foo, Foo);
       },
 
       'treats ints as a list': {
-        topic: function(test, Test) {
-          test.ints.lpush(1, this.callback);
+        topic: function(foo, test) {
+          test.ints.lpush(foo, this.callback);
         },
 
         'returns success': function(err, status) {
           assert.isNull(err);
           assert.equal(status, 1);
-        }
-      }
-    }
-  },
-
-  'an object with a set association': {
-    topic: function() {
-      return Redobl.define('Test', {
-        schema: {
-          floats: { type: 'set' }
-        }
-      });
-    },
-
-    'creates the set association': function(Test) {
-      assert.typeOf(Test.associations.floats, 'object');
-    },
-
-    'when instantiated': {
-      topic: function(Test) {
-        Test.create({}, this.callback);
-      },
-
-      'has an association named floats': function(err, test) {
-        assert.isNotNull(test.floats);
-      },
-
-      'instantiates the floats association': function(err, test) {
-        assert.isString(test.floats.redis_key);
-      },
-
-      'treats floats as a set': {
-        topic: function(test, Test) {
-          test.floats.add(1, this.callback);
         },
 
-        'returns success': function(err, status) {
-          assert.isNull(err);
-          assert.equal(status, 1);
+        'and can reload': {
+          topic: function(_, foo, test) {
+            test.ints.lpop(this.callback);
+          },
+
+          'returns the same value': function(err, val) {
+            var foo = this.context.topics[2];
+            assert.instanceOf(val, Foo);
+            assert.equal(val.id, foo.id);
+          }
         }
       }
     }
-  }
+  }),
+
+  'an object with a set association': testAssociation('set', {}, {
+    'treats ints as a set': {
+      topic: function(test, Test) {
+        test.ints.add(1, this.callback);
+      },
+
+      'returns success': function(err, status) {
+        assert.isNull(err);
+        assert.equal(status, 1);
+      }
+    }
+  }),
+
+  'an object with a sorted set association': testAssociation('zset', {}, {
+    'treats ints as a sorted set': {
+      topic: function(test, Test) {
+        test.ints.add(1, 1, this.callback);
+      },
+
+      'returns success': function(err, status) {
+        assert.isNull(err);
+        assert.equal(status, 1);
+      }
+    }
+  })
 });
 
 suite.export(module);
