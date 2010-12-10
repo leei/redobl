@@ -143,6 +143,24 @@ suite.addBatch({
 });
 
 suite.addBatch({
+  'a saved redobl object': {
+    topic: function() {
+      Test.create({a: 10}, this.callback);
+    },
+
+    'can be destroyed': {
+      topic: function(test) {
+        test.destroy(this.callback);
+      },
+
+      'and returns 1': function(err, count) {
+        assert.equal(count, 1);
+      }
+    }
+  }
+});
+
+suite.addBatch({
   'close connection': {
     topic: function() {
       client.flushdb();

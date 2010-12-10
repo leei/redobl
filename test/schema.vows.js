@@ -72,7 +72,7 @@ suite.addBatch({
 
   'an object with a list association': testAssociation('list', {}, {
     'treats ints as a list': {
-      topic: function(test, Test) {
+      topic: function(test) {
         test.ints.lpush(1, this.callback);
       },
 
@@ -85,7 +85,7 @@ suite.addBatch({
 
   'an object with a list of Foo association': testAssociation('list', {of: Foo}, {
     'given a Foo object': {
-      topic: function(test, Test) {
+      topic: function(test) {
         var that = this;
         Foo.create({}, function (err, status) {
           that.callback(err, this);
@@ -130,6 +130,15 @@ suite.addBatch({
       'returns success': function(err, status) {
         assert.isNull(err);
         assert.equal(status, 1);
+      },
+      
+      'when destroyed': {
+          topic: function(_, test) {
+              test.destroy(this.callback);
+          },
+          'deletes object and association': function(err, count) {
+            assert.equal(count, 2);
+          }
       }
     }
   }),
@@ -147,5 +156,6 @@ suite.addBatch({
     }
   })
 });
+
 
 suite.export(module);
