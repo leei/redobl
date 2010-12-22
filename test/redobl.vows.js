@@ -1,6 +1,6 @@
 var vows = require('vows'), assert = require('assert');
 var sys = require('sys');
-var redis = require('redis-node');
+var redis = require('redis');
 
 require('underscore');
 var Redobl = require('../lib/redobl').Redobl;
@@ -164,7 +164,7 @@ suite.addBatch({
   'close connection': {
     topic: function() {
       client.flushdb();
-      client.close();
+      client.quit();
       return client;
     },
 

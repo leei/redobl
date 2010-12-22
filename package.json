@@ -22,6 +22,6 @@
     url: "http://github.com/leei/redobl/LICENSE"
   },
   dependencies: {
-    "redis-node": ">= 0.2.4"
+    "redis": ">= 0.4.0"
   }
 }

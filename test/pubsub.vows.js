@@ -1,5 +1,5 @@
 var vows = require('vows'), assert = require('assert'), sys = require('sys');
-var redis = require('redis-node');
+var redis = require('redis');
 
 require('underscore');
 var Redobl = require('../lib/redobl').Redobl;

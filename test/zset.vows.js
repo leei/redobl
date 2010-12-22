@@ -2,7 +2,7 @@ var sys = sys = require('sys');
 
 var vows = require('vows');
 var assert = require('assert');
-var redis = require('redis-node');
+var redis = require('redis');
 
 require('underscore');
 var Redobl = require('./../lib/redobl').Redobl;
