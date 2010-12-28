@@ -1,7 +1,8 @@
 var vows = require('vows'), assert = require('assert'), sys = require('sys');
 var redis = require('redis-node');
 
-require('underscore');
+var _ = require('underscore')._;
+
 var Redobl = require('../lib/redobl').Redobl;
 
 //Redobl.logging = true;
@@ -46,6 +47,20 @@ suite.addBatch({
           test.publish({a: 1, b:2});
         }, 500);
       }
+    }
+  }
+});
+
+suite.addBatch({
+  'close connection': {
+    topic: function() {
+      client.flushdb();
+      client.close();
+      return client;
+    },
+
+    'should be closed': function(c) {
+      ;
     }
   }
 });

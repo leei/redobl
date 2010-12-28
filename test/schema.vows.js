@@ -1,7 +1,7 @@
 var vows = require('vows'), assert = require('assert'), sys = require('sys');
 var redis = require('redis-node');
 
-require('underscore');
+var _ = require('underscore')._;
 var Redobl = require('../lib/redobl').Redobl;
 
 //Redobl.logging = true;
@@ -131,7 +131,7 @@ suite.addBatch({
         assert.isNull(err);
         assert.equal(status, 1);
       },
-      
+
       'when destroyed': {
           topic: function(_, test) {
               test.destroy(this.callback);
@@ -157,5 +157,18 @@ suite.addBatch({
   })
 });
 
+suite.addBatch({
+  'close connection': {
+    topic: function() {
+      client.flushdb();
+      client.close();
+      return client;
+    },
+
+    'should be closed': function(c) {
+      ;
+    }
+  }
+});
 
 suite.export(module);

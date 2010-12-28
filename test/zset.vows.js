@@ -4,7 +4,8 @@ var vows = require('vows');
 var assert = require('assert');
 var redis = require('redis-node');
 
-require('underscore');
+var _ = require('underscore')._;
+
 var Redobl = require('./../lib/redobl').Redobl;
 
 //Redobl.logging = true;
